@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="IFileAdapter.cs" />
+    <Compile Remove="ISync.cs" />
+    <Compile Remove="ITransportAdapter.cs" />
+    <Compile Remove="SyncConfig.cs" />
+    <Compile Remove="SyncLog.cs" />
+    <Compile Remove="SyncLogService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SynX.Core\SynX.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,30 @@
+{
+  "Sync": {
+    "TempSyncFolder": "d:/custom/backup/temp",
+    "BackupInFolder": "d:/custom/backup/buin",
+    "BackupOutFolder": "d:/custom/backup/buout",
+    "Configs": [
+      {
+        "Id": "gr_custom",
+        "SyncTypeTag": "GR",
+        "TransportAdapter": "",
+        "FileAdapter": "",
+        "IdNoFormat": "SAP {ddMMyyyy}{counter}",
+        "IsSyncOut": false,
+        "TransportId": "ftp_tam"
+      }
+    ],
+    "Transports": [
+      {
+        "TransportType": "ftp",
+        "Id": "ftp_custom",
+        "Name": "TAM ADM GR FTP",
+        "Host": "ft.toyota.astra.co.id",
+        "Port": 21,
+        "UserName": "ADM-GR",
+        "Password": "Avanza2020",
+        "RemotePath": "/OUT"
+      }
+    ]
+  }
+}

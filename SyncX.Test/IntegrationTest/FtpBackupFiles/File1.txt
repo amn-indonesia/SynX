@@ -1,0 +1,6 @@
+isi dari baris pertama
+isi dari baris kedua
+isi dari baris ketiga
+
+
+isi dari baris ke enam
