@@ -12,6 +12,7 @@ namespace SynX.Core.Config
         public string SyncTypeTag { get; set; }         // Root Tag GR, MT_CWS_GR, dll
         public string TransportAdapter { get; set; }    // SyncX.Ftp.FtpTransportAdapter
         public string FileAdapter { get; set; }         // SyncX.AdmTamSap.AdmTamSapFileAdapter
+        public string IdNoTag { get; set; } = "IDNo";
         public string IdNoFormat { get; set; }          // {ddMMyyyy} - date format {counter} - running number
         public bool IsSyncOut { get; set; } = false;    // true = sync OUT, false = sync IN (default)
         public string AssemblyHandler { get; set; }     // ApplicationCore.Infrastructure.Service.PurchaseOrderSyncService

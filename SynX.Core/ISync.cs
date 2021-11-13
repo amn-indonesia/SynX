@@ -8,7 +8,7 @@ namespace SynX.Core
 {
     public interface ISync
     {
-        void OnFileReceived(string syncId, string idNo, dynamic payload);
-        void OnFileResponseReceived(string syncId, string idNo, dynamic payload);
+        void OnFileReceived(string syncId, string idNo, Dictionary<string, object> payload, string syncLogId);
+        void OnFileResponseReceived(string syncId, string idNo, Dictionary<string, object> payload, string syncLogId);
     }
 }

@@ -21,7 +21,7 @@ namespace SynX.Core
             //_context = new AppDbContext(builder.Options);
         }
 
-        public async Task LogSyncSet(string recordId, string syncType, string idNo, string fileName, bool isResponseFile, 
+        public async Task<string> LogSyncSet(string recordId, string syncType, string idNo, string fileName, bool isResponseFile, 
             string syncStatus, string errorMessage = "")
         {
             var log = new SyncLog()
@@ -40,9 +40,10 @@ namespace SynX.Core
 
             await _context.SyncLogs.AddAsync(log);
             await _context.SaveChangesAsync();
+            return log.Id;
         }
 
-        public async Task LogSyncGet(string idNo, string syncType, string fileName, bool isResponseFile, 
+        public async Task<string> LogSyncGet(string idNo, string syncType, string fileName, bool isResponseFile, 
             string syncStatus, string errorMessage = "")
         {
             var log = new SyncLog()
@@ -61,6 +62,7 @@ namespace SynX.Core
 
             await _context.SyncLogs.AddAsync(log);
             await _context.SaveChangesAsync();
+            return log.Id;
         }
 
         public async Task<List<SyncLog>> GetById(string idNo)

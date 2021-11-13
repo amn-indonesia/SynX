@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SynX.Core\SynX.Core.csproj" />
+    <ProjectReference Include="..\SynX.FileAdapter.SimpleXml\SynX.FileAdapter.SimpleXml.csproj" />
     <ProjectReference Include="..\SynX.Transport.Ftp\SynX.Transport.Ftp.csproj" />
     <ProjectReference Include="..\SynX\SynX.csproj" />
   </ItemGroup>

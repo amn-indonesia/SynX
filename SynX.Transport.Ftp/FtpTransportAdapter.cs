@@ -96,6 +96,34 @@ namespace SynX.Transport.Ftp
             return true;
         }
 
+        public bool MoveToBackup(string remoteFileName, SyncConfig syncConfig)
+        {
+            var transport = syncConfig.TransportConfig;
+            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            {
+                client.Connect();
+                try
+                {
+                    client.SetWorkingDirectory(transport.RemotePath);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                    return false;
+                }
+
+                if (!client.FileExists(remoteFileName)) return false;
+
+                var localFileName = Path.Combine(syncConfig.BackupOutPath, Path.GetFileName(remoteFileName));
+                client.DownloadFile(localFileName, remoteFileName, FtpLocalExists.Overwrite);
+                if(!File.Exists(localFileName)) return false;
+
+                client.DeleteFile(remoteFileName);
+            }
+
+            return true;
+        }
+
         public string ReadFileContent(string remoteFileName, SyncConfig syncConfig)
         {
             var transport = syncConfig.TransportConfig;
