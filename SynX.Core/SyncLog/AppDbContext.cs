@@ -15,10 +15,14 @@ namespace SynX.Core
         }
 
         public DbSet<SyncLog> SyncLogs { get; set; }
+        public DbSet<IdNoCounter> idNoCounters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SyncLog>()
+                .HasKey(e => e.Id);
+
+            modelBuilder.Entity<IdNoCounter>()
                 .HasKey(e => e.Id);
         }
     }

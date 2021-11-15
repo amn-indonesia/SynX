@@ -42,10 +42,11 @@ namespace SynX
             if(!string.IsNullOrEmpty(syncId))
                 configs = appConfig.Configs.Where(e=>e.Id == syncId).ToList();
 
-            foreach(var config in configs)
+            foreach(var cfg in configs)
             {
                 try
                 {
+                    var config = appConfig.GetConfig(cfg.Id);
                     // prepare transport adapter, file adapter
                     var transportAdapter = GetTransportAdapter(config.TransportAdapter);
                     var fileAdapter = GetFileAdapter(config.FileAdapter);
@@ -58,6 +59,9 @@ namespace SynX
                     // process every files
                     foreach(var file in files)
                     {
+                        var logid = string.Empty;
+                        var idNo = string.Empty;
+
                         try
                         {
                             // download sync file to temporaray file
@@ -71,25 +75,28 @@ namespace SynX
                                 continue;
 
                             // check if idno exists
-                            var idNo = string.Empty;
                             if (payload.ContainsKey(config.IdNoTag))
                                 idNo = (string)payload[config.IdNoTag];
 
                             // check if this is response file by querying idno in synclog table
+                            string fileName = Path.GetFileName(file);
                             if (await _syncLogService.IsResponse(idNo))
                             {
-                                var logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, file, true, "RECEIVED");
+                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
                                 syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
                             } else
                             {
-                                var logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, file, false, "RECEIVED");
+                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
                                 syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
                             }
 
                             // move success files to backup folder
                             if (transportAdapter.MoveToBackup(file, config) == false)
                                 continue;
-                        } catch { }
+                        } catch (Exception fileEx)
+                        {
+                            await _syncLogService.LogError(idNo, fileEx.Message, logid);
+                        }
                     }
                 } catch { }
             }
@@ -122,7 +129,7 @@ namespace SynX
         private async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload, bool isResponse)
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
-            var config = appConfig.Configs.Where(e => e.Id == syncId).FirstOrDefault();
+            var config = appConfig.GetConfig(syncId);
             if (config == null) 
                 throw new KeyNotFoundException($"Sync id {syncId} not found.");
 
@@ -130,8 +137,8 @@ namespace SynX
             var transportAdapter = GetTransportAdapter(config.TransportAdapter);
             var fileAdapter = GetFileAdapter(config.FileAdapter);
 
-            // TODO generate ID_No
-            var idNo = "";
+            // generate ID_No
+            var idNo = await _syncLogService.GenerateIdNo(config.IdNoFormat);
 
             if (payload.ContainsKey(config.IdNoTag))
                 payload[config.IdNoTag] = idNo;
@@ -141,7 +148,15 @@ namespace SynX
             var content = fileAdapter.GenerateSyncFile(payload, config);
 
             // write file to upload
-            var tempFile = Path.GetTempFileName();
+            if (string.IsNullOrEmpty(config.SyncOutFileName)) 
+                config.SyncOutFileName = "SYNC_{date}{time}.xml";
+
+            var tempFileName = config.SyncOutFileName
+                .Replace("{date}", DateTime.Now.ToString("ddMMyyyy"))
+                .Replace("{time}", DateTime.Now.ToString("hhmmss"));
+
+            var tempFile = Path.Combine(Path.GetTempPath(), tempFileName);
+
             await File.WriteAllTextAsync(tempFile, content);
             if (!File.Exists(tempFile))
                 throw new Exception($"Failed to generate sync file {tempFile}");
@@ -149,7 +164,7 @@ namespace SynX
             if (transportAdapter.UploadFile(tempFile, config) == false)
                 throw new Exception($"Failed to upload sync file {tempFile}");
 
-            await _syncLogService.LogSyncSet(recordId, config.SyncTypeTag, idNo, tempFile, isResponse, "SENT TO SAP");
+            await _syncLogService.LogSyncSet(recordId, config.SyncTypeTag, idNo, tempFileName, isResponse, "SENT TO SAP");
 
             return idNo;
         }

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GR>
+  <ID_No>UT_FAILED</ID_No>
+  <TransactionDate>2021-09-27 10:28:53</TransactionDate>
+  <Plant>SAP</Plant>
+  <Details>
+    <PONo>4500068672</PONo>
+    <VendorCode>3001729</VendorCode>
+    <VendorName>Vendor A</VendorName>
+    <OrderNo>DN4120110015505A</OrderNo>
+    <DelDate>2020-11-02</DelDate>
+    <DelTime>03:00:00</DelTime>
+    <DelCycle>1</DelCycle>
+    <RecStatus>CLOSE</RecStatus>
+    <Item>
+      <RecDate>2020-11-02</RecDate>
+      <RecTime>01:31:35</RecTime>
+      <PartNo>86160-BZ180-00</PartNo>
+      <QtyOrder>30</QtyOrder>
+      <QtyReceive>30</QtyReceive>
+      <QtyBalance>0</QtyBalance>
+      <CancelStatus>0</CancelStatus>
+    </Item>
+  </Details>
+  <Details>
+    <PONo>4500068672</PONo>
+    <VendorCode>3001729</VendorCode>
+    <VendorName>Vendor A</VendorName>
+    <OrderNo>DN4120110015506A</OrderNo>
+    <DelDate>2020-11-02</DelDate>
+    <DelTime>03:00:00</DelTime>
+    <DelCycle>1</DelCycle>
+    <RecStatus>CLOSE</RecStatus>
+    <Item>
+      <RecDate>2020-11-02</RecDate>
+      <RecTime>01:31:44</RecTime>
+      <PartNo>86160-BZ180-00</PartNo>
+      <QtyOrder>15</QtyOrder>
+      <QtyReceive>15</QtyReceive>
+      <QtyBalance>0</QtyBalance>
+      <CancelStatus>0</CancelStatus>
+    </Item>
+  </Details>
+  <Details>
+    <PONo>4500068672</PONo>
+    <VendorCode>3001729</VendorCode>
+    <VendorName>Vendor A</VendorName>
+    <OrderNo>DN4120110015509A</OrderNo>
+    <DelDate>2020-11-02</DelDate>
+    <DelTime>02:30:00</DelTime>
+    <DelCycle>1</DelCycle>
+    <RecStatus>CLOSE</RecStatus>
+    <Item>
+      <RecDate>2020-11-02</RecDate>
+      <RecTime>01:11:51</RecTime>
+      <PartNo>86160-BZ180-00</PartNo>
+      <QtyOrder>150</QtyOrder>
+      <QtyReceive>150</QtyReceive>
+      <QtyBalance>0</QtyBalance>
+      <CancelStatus>0</CancelStatus>
+    </Item>
+  </Details>
+</GR>
