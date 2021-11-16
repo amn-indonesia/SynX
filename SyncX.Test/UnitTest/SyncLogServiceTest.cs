@@ -13,7 +13,7 @@ namespace SynX.Test.UnitTest
     public class SyncLogServiceTest : SyncLogSqliteTest
     {
         public SyncLogServiceTest() : base(
-            new DbContextOptionsBuilder<AppDbContext>()
+            new DbContextOptionsBuilder<SyncLogDbContext>()
             .UseSqlite("Filename=test.db")
             .Options)
         {
@@ -23,7 +23,7 @@ namespace SynX.Test.UnitTest
         [Fact]
         public async Task SyncSet_Success()
         {
-            using(var context = new AppDbContext(ContextOptions))
+            using(var context = new SyncLogDbContext(ContextOptions))
             {
                 var expected = new SyncLog()
                 {
@@ -48,7 +48,7 @@ namespace SynX.Test.UnitTest
         [Fact]
         public async Task SyncSetResponse_Success()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var expected = new SyncLog()
                 {
@@ -73,7 +73,7 @@ namespace SynX.Test.UnitTest
         [Fact]
         public async Task SyncGet_Success()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var expected = new SyncLog()
                 {
@@ -97,7 +97,7 @@ namespace SynX.Test.UnitTest
         [Fact]
         public async Task SyncGetResponse_Success()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var expected = new SyncLog()
                 {
@@ -118,7 +118,7 @@ namespace SynX.Test.UnitTest
             }
         }
 
-        private async Task AssertValues(SyncLog expected, AppDbContext context)
+        private async Task AssertValues(SyncLog expected, SyncLogDbContext context)
         {
             var actual = await context.SyncLogs.Where(e => e.IdNo == expected.IdNo).FirstOrDefaultAsync();
             actual.Should().NotBeNull();

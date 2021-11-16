@@ -23,13 +23,15 @@ namespace SynX.Transport.Ftp
         {
             var transport = syncConfig.TransportConfig;
             var results = new List<string>();
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
             using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
             {
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch (Exception ex)
                 {
@@ -48,13 +50,15 @@ namespace SynX.Transport.Ftp
         {
             var transport = syncConfig.TransportConfig;
             var results = new List<string>();
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
             using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
             {
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch (Exception ex)
                 {
@@ -62,10 +66,15 @@ namespace SynX.Transport.Ftp
                     return results;
                 }
 
-                foreach (var item in client.GetListing(transport.RemotePath))
+                foreach (var item in client.GetListing(remotePath))
                 {
                     if (item.Type == FtpFileSystemObjectType.File)
+                    {
+                        if (Path.GetExtension(item.FullName).ToLower() != ".xml")
+                            continue;
+
                         results.Add(item.FullName);
+                    }
                 }
             }
 
@@ -75,13 +84,15 @@ namespace SynX.Transport.Ftp
         public bool MoveFile(string remoteSourceFileName, string remoteDestinationFileName, SyncConfig syncConfig)
         {
             var transport = syncConfig.TransportConfig;
-            
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
+
             using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
             {
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch (Exception ex)
                 {
@@ -96,17 +107,50 @@ namespace SynX.Transport.Ftp
             return true;
         }
 
-        public string ReadFileContent(string remoteFileName, SyncConfig syncConfig)
+        public bool MoveToBackup(string remoteFileName, SyncConfig syncConfig)
         {
             var transport = syncConfig.TransportConfig;
-            string result = string.Empty;
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
             using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
             {
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                    return false;
+                }
+
+                if (!client.FileExists(remoteFileName)) return false;
+
+                var localFileName = Path.Combine(syncConfig.BackupOutPath, Path.GetFileName(remoteFileName));
+                client.DownloadFile(localFileName, remoteFileName, FtpLocalExists.Overwrite);
+                if(!File.Exists(localFileName)) return false;
+
+                client.DeleteFile(remoteFileName);
+            }
+
+            return true;
+        }
+
+        public string ReadFileContent(string remoteFileName, SyncConfig syncConfig)
+        {
+            var transport = syncConfig.TransportConfig;
+            string result = string.Empty;
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
+
+            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            {
+                client.Connect();
+                try
+                {
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch (Exception ex)
                 {
@@ -137,13 +181,15 @@ namespace SynX.Transport.Ftp
         public bool RemoveFile(string remoteFileName, SyncConfig syncConfig)
         {
             var transport = syncConfig.TransportConfig;
-            
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
+
             using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
             {
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch (Exception ex)
                 {
@@ -162,7 +208,10 @@ namespace SynX.Transport.Ftp
         {
             var transport = syncConfig.TransportConfig;
             var fileName = Path.GetFileName(localFileName);
-            string remotePath = Path.Combine(transport.RemotePath, fileName);
+            var remotePath = transport.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
+
+            string remoteFileName = Path.Combine(remotePath, fileName);
 
             if (!File.Exists(localFileName)) return false;
 
@@ -171,7 +220,7 @@ namespace SynX.Transport.Ftp
                 client.Connect();
                 try
                 {
-                    client.SetWorkingDirectory(transport.RemotePath);
+                    client.SetWorkingDirectory(remotePath);
                 }
                 catch(Exception ex)
                 {
@@ -179,7 +228,7 @@ namespace SynX.Transport.Ftp
                     return false;
                 }
 
-                client.UploadFile(localFileName, remotePath);
+                client.UploadFile(localFileName, remoteFileName);
             }
 
             return true;

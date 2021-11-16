@@ -7,18 +7,22 @@ using System.Threading.Tasks;
 
 namespace SynX.Core
 {
-    public class AppDbContext : DbContext
+    public class SyncLogDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        public SyncLogDbContext(DbContextOptions<SyncLogDbContext> options) : base(options)
         {
             Database.SetCommandTimeout(180);
         }
 
         public DbSet<SyncLog> SyncLogs { get; set; }
+        public DbSet<IdNoCounter> idNoCounters { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SyncLog>()
+                .HasKey(e => e.Id);
+
+            modelBuilder.Entity<IdNoCounter>()
                 .HasKey(e => e.Id);
         }
     }

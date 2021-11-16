@@ -10,18 +10,18 @@ namespace SynX.Test.UnitTest
 {
     public class SyncLogSqliteTest
     {
-        public SyncLogSqliteTest(DbContextOptions<AppDbContext> contextOptions)
+        public SyncLogSqliteTest(DbContextOptions<SyncLogDbContext> contextOptions)
         {
             ContextOptions = contextOptions;
 
             Seed();
         }
 
-        protected DbContextOptions<AppDbContext> ContextOptions { get; }
+        protected DbContextOptions<SyncLogDbContext> ContextOptions { get; }
 
         private void Seed()
         {
-            using(var context = new AppDbContext(ContextOptions))
+            using(var context = new SyncLogDbContext(ContextOptions))
             {
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();

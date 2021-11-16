@@ -5,17 +5,17 @@
     <Version>1.0.0</Version>
     <Authors>hskartono</Authors>
     <Company>PT. AMN Indonesia</Company>
-    <Description>Ftp transport library to be used with SynX</Description>
+    <Description>SimpleXML file adapter for SynX</Description>
     <Copyright>Copyright (c) 2021 AMN Indonesia</Copyright>
     <RepositoryUrl>https://github.com/amn-indonesia/SynX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>sync; sap; integration; synx transport; ftp; ftp transport;</PackageTags>
+    <PackageTags>sync; sap; integration; synx file adapter; simple xml;</PackageTags>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FluentFTP" Version="35.0.5" />
+    <PackageReference Include="XMLReadWrite" Version="0.0.3" />
   </ItemGroup>
 
   <ItemGroup>

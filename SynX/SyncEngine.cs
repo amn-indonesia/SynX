@@ -1,6 +1,10 @@
-﻿using SynX.Core;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using SynX.Core;
+using SynX.Core.Config;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,32 +14,199 @@ namespace SynX
 {
     public class SyncEngine
     {
-        public static void CheckSyncGet()
+        private readonly SyncLogService _syncLogService;
+
+        protected SyncEngine(SyncLogService syncLogService)
         {
-            // TODO write implementation here
-            throw new NotImplementedException();
+            _syncLogService = syncLogService;
         }
 
-        public static string SendSyncSet(string syncId, string recordId, dynamic payload)
+        /// <summary>
+        /// Check all sync based on all sync configuration registered in applications.config
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task CheckSyncGet()
         {
-            return SendSyncSetResponse(syncId, recordId, payload, false);
+            await CheckSyncGet(string.Empty);
         }
 
-        public static string SendSyncSetResponse(string syncId, string recordId, dynamic payload)
+        /// <summary>
+        /// Check sync based on given sync configuration id registered in application.config
+        /// </summary>
+        /// <param name="syncId"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task CheckSyncGet(string syncId)
         {
-            return SendSyncSetResponse(syncId, recordId, payload, true);
+            var appConfig = SyncLogService.LoadAppSyncConfig();
+            var configs = appConfig.Configs;
+            if(!string.IsNullOrEmpty(syncId))
+                configs = appConfig.Configs.Where(e=>e.Id == syncId).ToList();
+
+            foreach(var cfg in configs)
+            {
+                try
+                {
+                    var config = appConfig.GetConfig(cfg.Id);
+                    // prepare transport adapter, file adapter
+                    var transportAdapter = GetTransportAdapter(config.TransportAdapter);
+                    var fileAdapter = GetFileAdapter(config.FileAdapter);
+                    var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+
+                    // load files
+                    var files = transportAdapter.GetFileList(config);
+                    if (files == null || files.Count == 0) continue;
+
+                    // process every files
+                    foreach(var file in files)
+                    {
+                        var logid = string.Empty;
+                        var idNo = string.Empty;
+
+                        try
+                        {
+                            // download sync file to temporaray file
+                            var tempFile = Path.GetTempFileName();
+                            if(transportAdapter.DownloadFile(file, tempFile, config) == false) 
+                                continue;
+
+                            // read and convert sync file to payload
+                            var payload = fileAdapter.ReadSyncFile(tempFile, config);
+                            if (payload == null) 
+                                continue;
+
+                            // check if idno exists
+                            if (payload.ContainsKey(config.IdNoTag))
+                                idNo = (string)payload[config.IdNoTag];
+
+                            // check if this is response file by querying idno in synclog table
+                            string fileName = Path.GetFileName(file);
+                            if (await _syncLogService.IsResponse(idNo))
+                            {
+                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
+                                syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                            } else
+                            {
+                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
+                                syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                            }
+
+                            // move success files to backup folder
+                            if (transportAdapter.MoveToBackup(file, config) == false)
+                                continue;
+                        } catch (Exception fileEx)
+                        {
+                            await _syncLogService.LogError(idNo, fileEx.Message, logid);
+                        }
+                    }
+                } catch { }
+            }
         }
 
+        /// <summary>
+        /// Create sync file based on payload given
+        /// </summary>
+        /// <param name="syncId"></param>
+        /// <param name="recordId"></param>
+        /// <param name="payload"></param>
+        /// <returns></returns>
+        public async Task<string> SendSyncSet(string syncId, string recordId, Dictionary<string, object> payload)
+        {
+            return await SendSyncSetResponse(syncId, recordId, payload, false);
+        }
+
+        /// <summary>
+        /// Create response sync file based on payload given
+        /// </summary>
+        /// <param name="syncId"></param>
+        /// <param name="recordId"></param>
+        /// <param name="payload"></param>
+        /// <returns></returns>
+        public async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload)
+        {
+            return await SendSyncSetResponse(syncId, recordId, payload, true);
+        }
+
+        private async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload, bool isResponse)
+        {
+            var appConfig = SyncLogService.LoadAppSyncConfig();
+            var config = appConfig.GetConfig(syncId);
+            if (config == null) 
+                throw new KeyNotFoundException($"Sync id {syncId} not found.");
+
+            // prepare transport adapter, file adapter
+            var transportAdapter = GetTransportAdapter(config.TransportAdapter);
+            var fileAdapter = GetFileAdapter(config.FileAdapter);
+
+            // generate ID_No
+            var idNo = await _syncLogService.GenerateIdNo(config.IdNoFormat);
+
+            if (payload.ContainsKey(config.IdNoTag))
+                payload[config.IdNoTag] = idNo;
+            else
+                payload.Add(config.IdNoTag, idNo);
+
+            var content = fileAdapter.GenerateSyncFile(payload, config);
+
+            // write file to upload
+            if (string.IsNullOrEmpty(config.SyncOutFileName)) 
+                config.SyncOutFileName = "SYNC_{date}{time}.xml";
+
+            var tempFileName = config.SyncOutFileName
+                .Replace("{date}", DateTime.Now.ToString("ddMMyyyy"))
+                .Replace("{time}", DateTime.Now.ToString("hhmmss"));
+
+            var tempFile = Path.Combine(Path.GetTempPath(), tempFileName);
+
+            await File.WriteAllTextAsync(tempFile, content);
+            if (!File.Exists(tempFile))
+                throw new Exception($"Failed to generate sync file {tempFile}");
+
+            if (transportAdapter.UploadFile(tempFile, config) == false)
+                throw new Exception($"Failed to upload sync file {tempFile}");
+
+            await _syncLogService.LogSyncSet(recordId, config.SyncTypeTag, idNo, tempFileName, isResponse, "SENT TO SAP");
+
+            return idNo;
+        }
+
+        #region STATIC METHODS
+
+        /// <summary>
+        /// Get transport adapter instance
+        /// </summary>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
         public static ITransportAdapter GetTransportAdapter(string assemblyName)
         {
             var obj = CreateInstance<ITransportAdapter>(assemblyName);
             return obj;
         }
 
-        private static string SendSyncSetResponse(string syncId, string recordId, dynamic payload, bool isResponse)
+        /// <summary>
+        /// Get file adapter instance
+        /// </summary>
+        /// <param name="assemblyName"></param>
+        /// <returns></returns>
+        public static IFileAdapter GetFileAdapter(string assemblyName)
         {
-            // TODO write implmentation here
-            throw new NotImplementedException();
+            var obj = CreateInstance<IFileAdapter>(assemblyName);
+            return obj;
+        }
+
+        private static SyncEngine syncLogEngine = null;
+        public static SyncEngine CreateInstance(string connectionStringName)
+        {
+            if (syncLogEngine != null) return syncLogEngine;
+            var config = SyncLogService.LoadConfig();
+            var options = new DbContextOptionsBuilder<SyncLogDbContext>()
+                .UseSqlServer(config.GetConnectionString(connectionStringName))
+                .Options;
+
+            var context = new SyncLogDbContext(options);
+            var syncLogService = new SyncLogService(context);
+            syncLogEngine = new SyncEngine(syncLogService);
+
+            return syncLogEngine;
         }
 
         private static T CreateInstance<T>(string fullyQualifiedName)
@@ -51,5 +222,19 @@ namespace SynX
 
             return obj;
         }
+
+        //private static SyncLogService syncLog;
+        //private static SyncLogService GetSyncLogServiceInstance()
+        //{
+        //    if (syncLog != null) return syncLog;
+
+        //    var builder = new DbContextOptionsBuilder<AppDbContext>();
+        //    builder.UseSqlServer(SyncLogService.LoadConfig().GetConnectionString("synclog"));
+        //    var context = new AppDbContext(builder.Options);
+        //    syncLog = new SyncLogService(context);
+        //    return syncLog;
+        //}
+
+        #endregion
     }
 }

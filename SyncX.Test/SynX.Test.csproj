@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SynX.Core\SynX.Core.csproj" />
+    <ProjectReference Include="..\SynX.FileAdapter.SimpleXml\SynX.FileAdapter.SimpleXml.csproj" />
     <ProjectReference Include="..\SynX.Transport.Ftp\SynX.Transport.Ftp.csproj" />
     <ProjectReference Include="..\SynX\SynX.csproj" />
   </ItemGroup>
@@ -32,6 +33,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="IntegrationTest\ftpdmin.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="UnitTest\Files\sync_failed.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="UnitTest\Files\parent_child_grandchild.xml">

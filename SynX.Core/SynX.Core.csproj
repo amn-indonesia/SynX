@@ -2,6 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <Authors>hskartono</Authors>
+    <Company>PT. AMN Indonesia</Company>
+    <Product>SynX</Product>
+    <Description>Producer/consumer synchronizer library. To be used with 3rd party or SAP Integration.</Description>
+    <Copyright>Copyright (c) 2021 AMN Indonesia</Copyright>
+    <RepositoryUrl>https://github.com/amn-indonesia/SynX</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>sync; sap; integration;</PackageTags>
+    <AssemblyVersion>1.0.1</AssemblyVersion>
+    <FileVersion>1.0.1</FileVersion>
+    <Version>1.0.1</Version>
+    <PackageReleaseNotes>Perubahan nama db context</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

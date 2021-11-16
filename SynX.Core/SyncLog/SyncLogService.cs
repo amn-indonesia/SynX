@@ -11,9 +11,9 @@ namespace SynX.Core
 {
     public class SyncLogService
     {
-        private readonly AppDbContext _context;
+        private readonly SyncLogDbContext _context;
 
-        public SyncLogService(AppDbContext context)
+        public SyncLogService(SyncLogDbContext context)
         {
             _context = context;
             //var builder = new DbContextOptionsBuilder<AppDbContext>();
@@ -21,7 +21,59 @@ namespace SynX.Core
             //_context = new AppDbContext(builder.Options);
         }
 
-        public async Task LogSyncSet(string recordId, string syncType, string idNo, string fileName, bool isResponseFile, 
+        public async Task<string> GenerateIdNo(string format)
+        {
+            var formatted = format.Replace("{date}", DateTime.Now.ToString("ddMMyyyy"))
+                .Replace("{time}", DateTime.Now.ToString("hhmmss"));
+
+            string prefix = formatted.Replace("{counter}", "");
+
+            var idnodb = await _context.idNoCounters.Where(e => e.Prefix == prefix).FirstOrDefaultAsync();
+            if (idnodb == null)
+            {
+                idnodb = new IdNoCounter()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Prefix = prefix,
+                    Counter = 0
+                };
+                await _context.idNoCounters.AddAsync(idnodb);
+                await _context.SaveChangesAsync();
+            }
+
+            idnodb = await _context.idNoCounters.Where(e => e.Prefix == prefix).FirstOrDefaultAsync();
+            idnodb.Counter++;
+            _context.idNoCounters.Update(idnodb);
+            await _context.SaveChangesAsync();
+
+            return formatted.Replace("{counter}", idnodb.Counter.ToString());
+        }
+
+        public async Task<string> LogError(string idNo, string message, string id = "")
+        {
+            var log = new SyncLog();
+            if (!string.IsNullOrEmpty(id))
+            {
+                log = _context.SyncLogs.Where(e => e.Id == id).FirstOrDefault();
+            }
+
+            log.IdNo = idNo;
+            log.ErrorMessage = message;
+            log.SyncStatus = "EXCEPTION";
+
+            if (string.IsNullOrEmpty(log.Id))
+            {
+                log.Id = Guid.NewGuid().ToString();
+                await _context.SyncLogs.AddAsync(log);
+            } else {
+                _context.SyncLogs.Update(log);
+            }
+
+            await _context.SaveChangesAsync();
+            return log.Id;
+        }
+
+        public async Task<string> LogSyncSet(string recordId, string syncType, string idNo, string fileName, bool isResponseFile, 
             string syncStatus, string errorMessage = "")
         {
             var log = new SyncLog()
@@ -40,9 +92,10 @@ namespace SynX.Core
 
             await _context.SyncLogs.AddAsync(log);
             await _context.SaveChangesAsync();
+            return log.Id;
         }
 
-        public async Task LogSyncGet(string idNo, string syncType, string fileName, bool isResponseFile, 
+        public async Task<string> LogSyncGet(string idNo, string syncType, string fileName, bool isResponseFile, 
             string syncStatus, string errorMessage = "")
         {
             var log = new SyncLog()
@@ -61,6 +114,7 @@ namespace SynX.Core
 
             await _context.SyncLogs.AddAsync(log);
             await _context.SaveChangesAsync();
+            return log.Id;
         }
 
         public async Task<List<SyncLog>> GetById(string idNo)

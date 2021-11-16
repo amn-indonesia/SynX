@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SynX.Core.Config;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,7 @@ namespace SynX.Core
 {
     public interface IFileAdapter
     {
-        dynamic ReadSyncFile(string fileName);
-        string GenerateSyncFile(dynamic payload);
+        Dictionary<string, object> ReadSyncFile(string fileName, SyncConfig config);
+        string GenerateSyncFile(Dictionary<string, object> payload, SyncConfig config);
     }
 }

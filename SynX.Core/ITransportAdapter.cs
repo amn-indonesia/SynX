@@ -16,5 +16,6 @@ namespace SynX.Core
         bool DownloadFile(string remoteFileName, string localFileName, SyncConfig syncConfig);
         bool UploadFile(string localFileName, SyncConfig syncConfig);
         bool RemoveFile(string remoteFileName, SyncConfig syncConfig);
+        bool MoveToBackup(string remoteFileName, SyncConfig syncConfig);
     }
 }
