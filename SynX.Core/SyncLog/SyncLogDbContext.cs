@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace SynX.Core
 {
-    public class AppDbContext : DbContext
+    public class SyncLogDbContext : DbContext
     {
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        public SyncLogDbContext(DbContextOptions<SyncLogDbContext> options) : base(options)
         {
             Database.SetCommandTimeout(180);
         }

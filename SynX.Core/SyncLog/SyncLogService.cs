@@ -11,9 +11,9 @@ namespace SynX.Core
 {
     public class SyncLogService
     {
-        private readonly AppDbContext _context;
+        private readonly SyncLogDbContext _context;
 
-        public SyncLogService(AppDbContext context)
+        public SyncLogService(SyncLogDbContext context)
         {
             _context = context;
             //var builder = new DbContextOptionsBuilder<AppDbContext>();

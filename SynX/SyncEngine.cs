@@ -16,7 +16,7 @@ namespace SynX
     {
         private readonly SyncLogService _syncLogService;
 
-        public SyncEngine(SyncLogService syncLogService)
+        protected SyncEngine(SyncLogService syncLogService)
         {
             _syncLogService = syncLogService;
         }
@@ -191,6 +191,22 @@ namespace SynX
         {
             var obj = CreateInstance<IFileAdapter>(assemblyName);
             return obj;
+        }
+
+        private static SyncEngine syncLogEngine = null;
+        public static SyncEngine CreateInstance(string connectionStringName)
+        {
+            if (syncLogEngine != null) return syncLogEngine;
+            var config = SyncLogService.LoadConfig();
+            var options = new DbContextOptionsBuilder<SyncLogDbContext>()
+                .UseSqlServer(config.GetConnectionString(connectionStringName))
+                .Options;
+
+            var context = new SyncLogDbContext(options);
+            var syncLogService = new SyncLogService(context);
+            syncLogEngine = new SyncEngine(syncLogService);
+
+            return syncLogEngine;
         }
 
         private static T CreateInstance<T>(string fullyQualifiedName)

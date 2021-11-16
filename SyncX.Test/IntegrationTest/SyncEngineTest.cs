@@ -15,7 +15,7 @@ namespace SynX.Test.IntegrationTest
     public class SyncEngineTest : SyncLogSqliteTest
     {
         public SyncEngineTest() : base(
-            new DbContextOptionsBuilder<AppDbContext>()
+            new DbContextOptionsBuilder<SyncLogDbContext>()
             .UseSqlite("Filename=test.db")
             .Options)
         {
@@ -25,10 +25,10 @@ namespace SynX.Test.IntegrationTest
         [Fact]
         public async Task SyncGet_SuccessResult_DataShouldUpdated()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var syncLog = new SyncLogService(context);
-                var sync = new SyncEngine(syncLog);
+                var sync = SyncEngine.CreateInstance("default"); //new SyncEngine(syncLog);
                 await sync.CheckSyncGet("sample_ftp_with_files");
             }
         }
@@ -36,10 +36,10 @@ namespace SynX.Test.IntegrationTest
         [Fact]
         public async Task SyncGet_FailedResult_DataShouldUpdated()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var syncLog = new SyncLogService(context);
-                var sync = new SyncEngine(syncLog);
+                var sync = SyncEngine.CreateInstance("default"); //new SyncEngine(syncLog);
                 await sync.CheckSyncGet("sample_ftp_with_files");
             }
         }
@@ -47,10 +47,10 @@ namespace SynX.Test.IntegrationTest
         [Fact]
         public async Task SyncSet_NotResponse_DataShouldUpdated()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var syncLog = new SyncLogService(context);
-                var sync = new SyncEngine(syncLog);
+                var sync = SyncEngine.CreateInstance("default"); //new SyncEngine(syncLog);
                 var payload = new Dictionary<string, object>();
                 payload.Add("TransactionDate", "2021-11-15 14:53:00");
                 payload.Add("Plant", "SAP");
@@ -65,10 +65,10 @@ namespace SynX.Test.IntegrationTest
         [Fact]
         public async Task SyncSet_Response_DataShouldUpdated()
         {
-            using (var context = new AppDbContext(ContextOptions))
+            using (var context = new SyncLogDbContext(ContextOptions))
             {
                 var syncLog = new SyncLogService(context);
-                var sync = new SyncEngine(syncLog);
+                var sync = SyncEngine.CreateInstance("default"); //new SyncEngine(syncLog);
                 var payload = new Dictionary<string, object>();
                 payload.Add("TransactionDate", "2021-11-15 14:53:00");
                 payload.Add("Plant", "SAP");
