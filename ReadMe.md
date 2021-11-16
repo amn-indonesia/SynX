@@ -15,23 +15,25 @@ Buat sebuah file pada project Infrastructure pada folder Services/Scheduler deng
 
 Class tersebut harus implement dari IBackgroundService, pada method ExecuteService, panggil pengecekan terhadap sync get.
 
-```
+```cs
 public class GoodReceiptSyncSchedulerService:IBackgroundService {
+  ...
   public async Task ExecuteService() {
     var sync = SyncEngine.CreateInstance(“default”);
     sync.CheckSyncGet(); 
   }
+  ...
 }
 ```
 
 Jika dibutuhkan untuk sync pada spesifik jenis sync tertentu, misal untuk get data sync goodreceipt, maka bisa dengan mengirimkan parameter id sync terhadap method CheckSyncGet.
-```
+```cs
 sync.CheckSyncGet(“default”);
 ```
 ## Sync Handler
 Pada file yang sama (GoodReceiptSyncSchedulerService.cs) tambahkan implement interface terhadap SynX.Core.ISync dan implementasikan kedua methodnya.
 
-```
+```cs
 public class GoodReceiptSyncSchedulerService:IBackgroundService, ISync {
   ...
   void OnFileReceived(string syncId, string idNo,
