@@ -102,6 +102,67 @@ namespace SynX
             }
         }
 
+        public void ResendFile(string syncId, string fileName)
+        {
+            var appConfig = SyncLogService.LoadAppSyncConfig();
+            var config = appConfig.GetConfig(syncId);
+            if (config == null) throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
+
+            string backupPath = config.BackupOutPath;
+            string synxFileName = Path.GetFileName(fileName);
+            string syncFullFileName = Path.Combine(backupPath, synxFileName);
+
+            if (!File.Exists(fileName))
+                fileName = syncFullFileName;
+            else if (!File.Exists(fileName))
+                throw new Exception($"File not exists {fileName}");
+
+            var transport = GetTransportAdapter(config.TransportAdapter);
+            if(transport.UploadFile(fileName, config) == false)
+                throw new Exception($"Failed to upload sync file {fileName}");
+        }
+
+        public async Task Reprocess(string syncId, string fileName)
+        {
+            var appConfig = SyncLogService.LoadAppSyncConfig();
+            var config = appConfig.GetConfig(syncId);
+            if (config == null) throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
+
+            string backupPath = config.BackupOutPath;
+            string synxFileName = Path.GetFileName(fileName);
+            string syncFullFileName = Path.Combine(backupPath, synxFileName);
+
+            if (!File.Exists(fileName))
+                fileName = syncFullFileName;
+            else if (!File.Exists(fileName))
+                throw new Exception($"File not exists {fileName}");
+
+            var fileAdapter = GetFileAdapter(config.FileAdapter);
+            var payload = fileAdapter.ReadSyncFile(fileName, config);
+            if (payload == null)
+                throw new Exception($"Failed to read file {fileName}");
+
+            // check if idno exists
+            var idNo = "";
+            if (payload.ContainsKey(config.IdNoTag))
+                idNo = (string)payload[config.IdNoTag];
+
+            var logid = "";
+            var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+            if (await _syncLogService.IsResponse(idNo))
+            {
+                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "REPROCESS");
+                syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+            }
+            else
+            {
+                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REREPROCESSEIVED");
+                syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+            }
+            
+            syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+        }
+
         /// <summary>
         /// Create sync file based on payload given
         /// </summary>
@@ -121,10 +182,12 @@ namespace SynX
         /// <param name="recordId"></param>
         /// <param name="payload"></param>
         /// <returns></returns>
-        public async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload)
+        public async Task<string> SendSyncSetResponse(string syncId, string idNo, Dictionary<string, object> payload)
         {
-            return await SendSyncSetResponse(syncId, recordId, payload, true);
+            return await SendSyncSetResponse(syncId, idNo, payload, true);
         }
+
+        public string GeneratedSyncFileName { get; private set; }
 
         private async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload, bool isResponse)
         {
@@ -138,7 +201,11 @@ namespace SynX
             var fileAdapter = GetFileAdapter(config.FileAdapter);
 
             // generate ID_No
-            var idNo = await _syncLogService.GenerateIdNo(config.IdNoFormat);
+            var idNo = "";
+            if (isResponse)
+                idNo = recordId;
+            else
+                idNo = await _syncLogService.GenerateIdNo(config.IdNoFormat);
 
             if (payload.ContainsKey(config.IdNoTag))
                 payload[config.IdNoTag] = idNo;
@@ -156,6 +223,8 @@ namespace SynX
                 .Replace("{time}", DateTime.Now.ToString("hhmmss"));
 
             var tempFile = Path.Combine(Path.GetTempPath(), tempFileName);
+
+            GeneratedSyncFileName = tempFileName;
 
             await File.WriteAllTextAsync(tempFile, content);
             if (!File.Exists(tempFile))

@@ -56,7 +56,7 @@ Sync set digunakan untuk mengirimkan file sync ke aplikasi tujuan. File sync yan
 
 Parameter dari kedua method tersebut adalah:
 
-- String syncId : berisi informasi id sync dari konfigurasi applications.config
+- String syncId : berisi informasi id sync dari konfigurasi appsettings.json
 - String recordId: berisi informasi id record dari data yang akan dikirim (jika ada)
 - Dictionary<string, object>: berisi associative dictionary untuk membentuk file xml yang akan dikirim.
 
@@ -75,3 +75,22 @@ Log sync get maupun sync set akan disimpan dalam sebuah table dengan nama SyncLo
 |SyncStatus|Nvarchar|Status sync (SENT TO SAP, RECEIVED, EXCEPTION, FAILED)|
 |ErrorMessage|Nvarchar|Pesan kesalahan|
 
+### Reprocess Sync Get
+Untuk melakukan reprocess, bisa memanfaatkan method **SyncService.Reprocess()***. Deklarasi lengkap dari method ini adalah sebagai berikut:
+
+```cs
+public async Task Reprocess(string syncId, string fileName)
+```
+
+- Field syncId berisi informasi id sync dari appsettings.json
+- Field fileName berisi informasi lokasi filename lengkap, atau hanya nama file saja dan akan otomatis di cari ke folder BACKUP IN untuk dikirim ulang.
+
+### Resend Sync Set
+Jika file sync set sudah pernah di generate, maka file tersebut bisa dikirimkan ulang ke destination server. Gunakan method **SyncService.ResendFile()***. Deklarasi lengkap dari method ini adalah sebagai berikut:
+
+```cs
+public void ResendFile(string syncId, string fileName)
+```
+
+- Field syncId berisi informasi id sync dari appsettings.json
+- Field fileName berisi informasi lokasi filename lengkap, atau hanya nama file saja dan akan otomatis di cari ke folder BACKUP OUT untuk di baca dan di re-proses.
