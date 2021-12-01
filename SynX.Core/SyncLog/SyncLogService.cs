@@ -135,6 +135,15 @@ namespace SynX.Core
         {
             var configuration = LoadConfig(configFile);
             var config = configuration.GetSection("Sync").Get<AppSyncConfig>();
+            if (config == null) {
+                string configFileName = "appsettings.json";
+                if (!string.IsNullOrEmpty(configFile))
+                {
+                    configFileName = configFile;
+                }
+
+                throw new Exception($"Sync:AppSyncConfig not found on {configFileName}.");
+            }
             return config;
         }
 

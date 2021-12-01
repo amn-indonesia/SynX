@@ -113,9 +113,14 @@ namespace SynX
             string syncFullFileName = Path.Combine(backupPath, synxFileName);
 
             if (!File.Exists(fileName))
+            {
                 fileName = syncFullFileName;
-            else if (!File.Exists(fileName))
+            }
+
+            if (!File.Exists(fileName))
+            {
                 throw new Exception($"File not exists {fileName}");
+            }
 
             var transport = GetTransportAdapter(config.TransportAdapter);
             if(transport.UploadFile(fileName, config) == false)
@@ -133,9 +138,14 @@ namespace SynX
             string syncFullFileName = Path.Combine(backupPath, synxFileName);
 
             if (!File.Exists(fileName))
+            {
                 fileName = syncFullFileName;
-            else if (!File.Exists(fileName))
+            }
+
+            if (!File.Exists(fileName))
+            {
                 throw new Exception($"File not exists {fileName}");
+            }
 
             var fileAdapter = GetFileAdapter(config.FileAdapter);
             var payload = fileAdapter.ReadSyncFile(fileName, config);
@@ -193,12 +203,34 @@ namespace SynX
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
             var config = appConfig.GetConfig(syncId);
-            if (config == null) 
+            if (config == null)
+            {
                 throw new KeyNotFoundException($"Sync id {syncId} not found.");
+            }
 
             // prepare transport adapter, file adapter
+            if (string.IsNullOrEmpty(config.TransportAdapter))
+            {
+                throw new Exception($"TransportAdapter is required for config Id = {config.Id}.");
+            }
+
+            if (string.IsNullOrEmpty(config.FileAdapter))
+            {
+                throw new Exception($"FileAdapter is required for config Id = {config.Id}.");
+            }
+
             var transportAdapter = GetTransportAdapter(config.TransportAdapter);
             var fileAdapter = GetFileAdapter(config.FileAdapter);
+
+            if (transportAdapter == null)
+            {
+                throw new Exception($"Failed create instance transport adapter {config.TransportAdapter}.");
+            }
+
+            if (fileAdapter == null)
+            {
+                throw new Exception($"Failed create instance file adapter {config.FileAdapter}");
+            }
 
             // generate ID_No
             var idNo = "";
