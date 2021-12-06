@@ -15,6 +15,7 @@ namespace SynX
     public class SyncEngine
     {
         private readonly SyncLogService _syncLogService;
+        public ISync SyncHandler { get; set; }
 
         protected SyncEngine(SyncLogService syncLogService)
         {
@@ -63,9 +64,10 @@ namespace SynX
                     if (fileAdapter == null)
                         throw new Exception($"Could not load file adapter with assembly [{config.FileAdapter}].");
 
-                    var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
-                    if (syncHandler == null)
-                        throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
+                    //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+                    if (SyncHandler == null)
+                        throw new Exception($"Please assign service to SyncHandler property");
+                    //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
 
                     // load files
                     var files = transportAdapter.GetFileList(config);
@@ -100,7 +102,7 @@ namespace SynX
                                 try
                                 {
                                     logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
-                                    syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                                    SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
                                 }
                                 catch { }
                             } else
@@ -108,7 +110,7 @@ namespace SynX
                                 try
                                 {
                                     logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
-                                    syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                                    SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
                                 }
                                 catch { }
                             }
@@ -195,16 +197,17 @@ namespace SynX
                 idNo = (string)payload[config.IdNoTag];
 
             var logid = "";
-            var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
-            if (syncHandler == null)
-                throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
+            //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+            if (SyncHandler == null)
+                throw new Exception($"Please assign service to SyncHandler property");
+            //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
 
             if (await _syncLogService.IsResponse(idNo))
             {
                 try
                 {
                     logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "REPROCESS");
-                    syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                    SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
                 }
                 catch { }
             }
@@ -213,7 +216,7 @@ namespace SynX
                 try
                 {
                     logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REREPROCESSEIVED");
-                    syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                    SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
                 }
                 catch { }
             }
