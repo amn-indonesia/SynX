@@ -2,6 +2,7 @@
 using SynX.Core.Config;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace SynX.FileAdapter.SimpleXml
 {
@@ -19,6 +20,11 @@ namespace SynX.FileAdapter.SimpleXml
 
         public Dictionary<string, object> ReadSyncFile(string fileName, SyncConfig config)
         {
+            if (!File.Exists(fileName))
+            {
+                throw new Exception($"Could not find file \"{fileName}\".");
+            }
+
             var reader = new XMLReadWrite.XMLReader();
             var rootXml = config.SyncTypeTag;
             var dict = reader.ReadXML(fileName, rootXml);

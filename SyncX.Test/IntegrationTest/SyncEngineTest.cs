@@ -79,5 +79,39 @@ namespace SynX.Test.IntegrationTest
                 log.RecordId.Should().Be("UT_RECORD_WITH_RESPONSE");
             }
         }
+
+
+        [Fact]
+        public async Task SyncSet_Response_DataShouldUpdated2()
+        {
+            using (var context = new SyncLogDbContext(ContextOptions))
+            {
+                var syncLog = new SyncLogService(context);
+                var sync = SyncEngine.CreateInstance("default"); //new SyncEngine(syncLog);
+                var payload = new Dictionary<string, object>() {
+                    {"ID_No", "KAP202109270001"},
+                    {"Transaction_Date", "11/30/2021 2:55:49 PM" },
+                    {"PO_No","PN123"},
+                    {"Details", new List<Dictionary<string, object>>()
+                        {
+                            new Dictionary<string, object>() {
+                                { "PO_No", "PN123" },
+                                { "Order_no", "DN5120060017967A" },
+                                { "Item", new List<Dictionary<string, object>>()
+                                    {
+                                        new Dictionary<string, object>() {
+                                            { "Part_No", "P6" },
+                                            { "Status", "1" },
+                                            { "Message", "" },
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                var idNo = await sync.SendSyncSetResponse("GR", "1", payload);
+            }
+        }
     }
 }
