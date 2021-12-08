@@ -209,7 +209,10 @@ namespace SynX.Transport.Ftp
             var transport = syncConfig.TransportConfig;
             var fileName = Path.GetFileName(localFileName);
             var remotePath = transport.RemotePath;
-            if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
+            if (!string.IsNullOrEmpty(syncConfig.RemotePath))
+            {
+                remotePath = syncConfig.RemotePath;
+            }
 
             string remoteFileName = Path.Combine(remotePath, fileName);
 

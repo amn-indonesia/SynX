@@ -15,10 +15,12 @@ namespace SynX
     public class SyncEngine
     {
         private readonly SyncLogService _syncLogService;
+        public ISync SyncHandler { get; set; }
 
         protected SyncEngine(SyncLogService syncLogService)
         {
             _syncLogService = syncLogService;
+            if (_syncLogService == null) throw new Exception("syncLogService cannot be loaded");
         }
 
         /// <summary>
@@ -38,8 +40,14 @@ namespace SynX
         public async Task CheckSyncGet(string syncId)
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
+            if (appConfig == null)
+                throw new Exception($"Could not load configuration from default file appsettings.json");
+
             var configs = appConfig.Configs;
-            if(!string.IsNullOrEmpty(syncId))
+            if (configs == null)
+                throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
+
+            if (!string.IsNullOrEmpty(syncId))
                 configs = appConfig.Configs.Where(e=>e.Id == syncId).ToList();
 
             foreach(var cfg in configs)
@@ -49,8 +57,17 @@ namespace SynX
                     var config = appConfig.GetConfig(cfg.Id);
                     // prepare transport adapter, file adapter
                     var transportAdapter = GetTransportAdapter(config.TransportAdapter);
+                    if (transportAdapter == null)
+                        throw new Exception($"Could not load transport adapter with assembly [{config.TransportAdapter}]");
+
                     var fileAdapter = GetFileAdapter(config.FileAdapter);
-                    var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+                    if (fileAdapter == null)
+                        throw new Exception($"Could not load file adapter with assembly [{config.FileAdapter}].");
+
+                    //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+                    if (SyncHandler == null)
+                        throw new Exception($"Please assign service to SyncHandler property");
+                    //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
 
                     // load files
                     var files = transportAdapter.GetFileList(config);
@@ -82,12 +99,20 @@ namespace SynX
                             string fileName = Path.GetFileName(file);
                             if (await _syncLogService.IsResponse(idNo))
                             {
-                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
-                                syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                                try
+                                {
+                                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
+                                    SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                                }
+                                catch { }
                             } else
                             {
-                                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
-                                syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                                try
+                                {
+                                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
+                                    SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                                }
+                                catch { }
                             }
 
                             // move success files to backup folder
@@ -105,39 +130,63 @@ namespace SynX
         public void ResendFile(string syncId, string fileName)
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
+            if (appConfig == null)
+                throw new Exception($"Could not load configuration from default file appsettings.json");
+
             var config = appConfig.GetConfig(syncId);
-            if (config == null) throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
+            if (config == null)
+                throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
 
             string backupPath = config.BackupOutPath;
             string synxFileName = Path.GetFileName(fileName);
             string syncFullFileName = Path.Combine(backupPath, synxFileName);
 
             if (!File.Exists(fileName))
+            {
                 fileName = syncFullFileName;
-            else if (!File.Exists(fileName))
+            }
+
+            if (!File.Exists(fileName))
+            {
                 throw new Exception($"File not exists {fileName}");
+            }
 
             var transport = GetTransportAdapter(config.TransportAdapter);
-            if(transport.UploadFile(fileName, config) == false)
+            if (transport == null)
+                throw new Exception($"Could not load transport adapter with assembly {config.TransportAdapter}");
+
+            if (transport.UploadFile(fileName, config) == false)
                 throw new Exception($"Failed to upload sync file {fileName}");
         }
 
         public async Task Reprocess(string syncId, string fileName)
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
+            if (appConfig == null)
+                throw new Exception($"Could not load configuration from default file appsettings.json");
+
             var config = appConfig.GetConfig(syncId);
-            if (config == null) throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
+            if (config == null)
+                throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
 
             string backupPath = config.BackupOutPath;
             string synxFileName = Path.GetFileName(fileName);
             string syncFullFileName = Path.Combine(backupPath, synxFileName);
 
             if (!File.Exists(fileName))
+            {
                 fileName = syncFullFileName;
-            else if (!File.Exists(fileName))
+            }
+
+            if (!File.Exists(fileName))
+            {
                 throw new Exception($"File not exists {fileName}");
+            }
 
             var fileAdapter = GetFileAdapter(config.FileAdapter);
+            if (fileAdapter == null)
+                throw new Exception($"Could not load file adapter with assembly [{config.FileAdapter}].");
+
             var payload = fileAdapter.ReadSyncFile(fileName, config);
             if (payload == null)
                 throw new Exception($"Failed to read file {fileName}");
@@ -148,19 +197,31 @@ namespace SynX
                 idNo = (string)payload[config.IdNoTag];
 
             var logid = "";
-            var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+            //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+            if (SyncHandler == null)
+                throw new Exception($"Please assign service to SyncHandler property");
+            //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
+
             if (await _syncLogService.IsResponse(idNo))
             {
-                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "REPROCESS");
-                syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                try
+                {
+                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "REPROCESS");
+                    SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+                }
+                catch { }
             }
             else
             {
-                logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REREPROCESSEIVED");
-                syncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                try
+                {
+                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REREPROCESSEIVED");
+                    SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                }
+                catch { }
             }
             
-            syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
+            //syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
         }
 
         /// <summary>
@@ -192,13 +253,38 @@ namespace SynX
         private async Task<string> SendSyncSetResponse(string syncId, string recordId, Dictionary<string, object> payload, bool isResponse)
         {
             var appConfig = SyncLogService.LoadAppSyncConfig();
+            if (appConfig == null)
+                throw new Exception($"Could not load configuration from default file appsettings.json");
+
             var config = appConfig.GetConfig(syncId);
-            if (config == null) 
+            if (config == null)
+            {
                 throw new KeyNotFoundException($"Sync id {syncId} not found.");
+            }
 
             // prepare transport adapter, file adapter
+            if (string.IsNullOrEmpty(config.TransportAdapter))
+            {
+                throw new Exception($"TransportAdapter is required for config Id = {config.Id}.");
+            }
+
+            if (string.IsNullOrEmpty(config.FileAdapter))
+            {
+                throw new Exception($"FileAdapter is required for config Id = {config.Id}.");
+            }
+
             var transportAdapter = GetTransportAdapter(config.TransportAdapter);
             var fileAdapter = GetFileAdapter(config.FileAdapter);
+
+            if (transportAdapter == null)
+            {
+                throw new Exception($"Failed create instance transport adapter {config.TransportAdapter}.");
+            }
+
+            if (fileAdapter == null)
+            {
+                throw new Exception($"Failed create instance file adapter {config.FileAdapter}");
+            }
 
             // generate ID_No
             var idNo = "";
