@@ -39,8 +39,8 @@ namespace SynX.Test.IntegrationTest
         public void DownloadFile_Exist_Return_True()
         {
             ITransportAdapter ftp = GetTransportAdapter("sample_ftp_with_files", out SyncConfig config);
-            string sourceFile = Path.Combine(config.TransportConfig.RemotePath, "File1.txt");
-            string destFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Download.txt");
+            string sourceFile = Path.Combine(config.TransportConfig.RemotePath, "KAP202109270001_20211209043001.xml");
+            string destFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "KAP202109270001_20211209043001.xml");
             
             var result = ftp.DownloadFile(sourceFile, destFile, config);
             result.Should().BeTrue();

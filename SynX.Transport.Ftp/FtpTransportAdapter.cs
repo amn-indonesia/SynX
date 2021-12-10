@@ -26,8 +26,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -53,8 +54,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -87,8 +89,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -113,8 +116,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -145,8 +149,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -184,8 +189,9 @@ namespace SynX.Transport.Ftp
             var remotePath = transport.RemotePath;
             if (!string.IsNullOrEmpty(syncConfig.RemotePath)) remotePath = syncConfig.RemotePath;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {
@@ -218,8 +224,9 @@ namespace SynX.Transport.Ftp
 
             if (!File.Exists(localFileName)) return false;
 
-            using (var client = new FtpClient(transport.Host, transport.Port, transport.UserName, transport.Password))
+            using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
+                client.EncryptionMode = FtpEncryptionMode.Explicit;
                 client.Connect();
                 try
                 {

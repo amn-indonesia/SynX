@@ -52,8 +52,8 @@ namespace SynX
 
             foreach(var cfg in configs)
             {
-                try
-                {
+                //try
+                //{
                     var config = appConfig.GetConfig(cfg.Id);
                     // prepare transport adapter, file adapter
                     var transportAdapter = GetTransportAdapter(config.TransportAdapter);
@@ -123,7 +123,7 @@ namespace SynX
                             await _syncLogService.LogError(idNo, fileEx.Message, logid);
                         }
                     }
-                } catch { }
+                //} catch { }
             }
         }
 
