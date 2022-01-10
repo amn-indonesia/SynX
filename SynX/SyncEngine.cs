@@ -48,81 +48,75 @@ namespace SynX
                 throw new Exception($"Could not load configuration with id {syncId}. Check applications.config file.");
 
             if (!string.IsNullOrEmpty(syncId))
-                configs = appConfig.Configs.Where(e=>e.Id == syncId).ToList();
+                configs = appConfig.Configs.Where(e => e.Id == syncId).ToList();
 
-            foreach(var cfg in configs)
+            foreach (var cfg in configs)
             {
                 //try
                 //{
-                    var config = appConfig.GetConfig(cfg.Id);
-                    // prepare transport adapter, file adapter
-                    var transportAdapter = GetTransportAdapter(config.TransportAdapter);
-                    if (transportAdapter == null)
-                        throw new Exception($"Could not load transport adapter with assembly [{config.TransportAdapter}]");
+                var config = appConfig.GetConfig(cfg.Id);
+                // prepare transport adapter, file adapter
+                var transportAdapter = GetTransportAdapter(config.TransportAdapter);
+                if (transportAdapter == null)
+                    throw new Exception($"Could not load transport adapter with assembly [{config.TransportAdapter}]");
 
-                    var fileAdapter = GetFileAdapter(config.FileAdapter);
-                    if (fileAdapter == null)
-                        throw new Exception($"Could not load file adapter with assembly [{config.FileAdapter}].");
+                var fileAdapter = GetFileAdapter(config.FileAdapter);
+                if (fileAdapter == null)
+                    throw new Exception($"Could not load file adapter with assembly [{config.FileAdapter}].");
 
-                    //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
-                    if (SyncHandler == null)
-                        throw new Exception($"Please assign service to SyncHandler property");
-                    //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
+                //var syncHandler = CreateInstance<ISync>(config.AssemblyHandler);
+                if (SyncHandler == null)
+                    throw new Exception($"Please assign service to SyncHandler property");
+                //throw new Exception($"Could not create instance for assembly {config.AssemblyHandler}");
 
-                    // load files
-                    var files = transportAdapter.GetFileList(config);
-                    if (files == null || files.Count == 0) continue;
+                // load files
+                var files = transportAdapter.GetFileList(config);
+                if (files == null || files.Count == 0) continue;
 
-                    // process every files
-                    foreach(var file in files)
+                // process every files
+                foreach (var file in files)
+                {
+                    var logid = string.Empty;
+                    var idNo = string.Empty;
+
+                    try
                     {
-                        var logid = string.Empty;
-                        var idNo = string.Empty;
+                        // download sync file to temporaray file
+                        var tempFile = Path.GetTempFileName();
+                        if (transportAdapter.DownloadFile(file, tempFile, config) == false)
+                            continue;
 
-                        try
+                        // read and convert sync file to payload
+                        var payload = fileAdapter.ReadSyncFile(tempFile, config);
+                        if (payload == null)
+                            continue;
+
+                        // check if idno exists
+                        if (payload.ContainsKey(config.IdNoTag))
+                            idNo = (string)payload[config.IdNoTag];
+
+                        // check if this is response file by querying idno in synclog table
+                        string fileName = Path.GetFileName(file);
+                        if (await _syncLogService.IsResponse(idNo))
                         {
-                            // download sync file to temporaray file
-                            var tempFile = Path.GetTempFileName();
-                            if(transportAdapter.DownloadFile(file, tempFile, config) == false) 
-                                continue;
-
-                            // read and convert sync file to payload
-                            var payload = fileAdapter.ReadSyncFile(tempFile, config);
-                            if (payload == null) 
-                                continue;
-
-                            // check if idno exists
-                            if (payload.ContainsKey(config.IdNoTag))
-                                idNo = (string)payload[config.IdNoTag];
-
-                            // check if this is response file by querying idno in synclog table
-                            string fileName = Path.GetFileName(file);
-                            if (await _syncLogService.IsResponse(idNo))
-                            {
-                                try
-                                {
-                                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
-                                    SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
-                                }
-                                catch { }
-                            } else
-                            {
-                                try
-                                {
-                                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
-                                    SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
-                                }
-                                catch { }
-                            }
-
-                            // move success files to backup folder
-                            if (transportAdapter.MoveToBackup(file, config) == false)
-                                continue;
-                        } catch (Exception fileEx)
-                        {
-                            await _syncLogService.LogError(idNo, fileEx.Message, logid);
+                            logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
+                            SyncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
                         }
+                        else
+                        {
+                            logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "RECEIVED");
+                            SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
+                        }
+
+                        // move success files to backup folder
+                        if (transportAdapter.MoveToBackup(file, config) == false)
+                            continue;
                     }
+                    catch (Exception fileEx)
+                    {
+                        await _syncLogService.LogError(idNo, fileEx.Message, logid);
+                    }
+                }
                 //} catch { }
             }
         }
@@ -220,7 +214,7 @@ namespace SynX
                 }
                 catch { }
             }
-            
+
             //syncHandler.OnFileResponseReceived(config.Id, idNo, payload, logid);
         }
 
@@ -301,7 +295,7 @@ namespace SynX
             var content = fileAdapter.GenerateSyncFile(payload, config);
 
             // write file to upload
-            if (string.IsNullOrEmpty(config.SyncOutFileName)) 
+            if (string.IsNullOrEmpty(config.SyncOutFileName))
                 config.SyncOutFileName = "SYNC_{date}{time}.xml";
 
             var tempFileName = config.SyncOutFileName
@@ -373,7 +367,7 @@ namespace SynX
             var className = explodedNames[0];
 
             var assem = Assembly.Load(assemblyName);
-            var obj = (T) assem.CreateInstance(className);
+            var obj = (T)assem.CreateInstance(className);
 
             return obj;
         }
