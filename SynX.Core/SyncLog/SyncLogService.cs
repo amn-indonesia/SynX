@@ -60,6 +60,7 @@ namespace SynX.Core
             log.IdNo = idNo;
             log.ErrorMessage = message;
             log.SyncStatus = "EXCEPTION";
+            log.FileDate = DateTime.Now;
 
             if (string.IsNullOrEmpty(log.Id))
             {

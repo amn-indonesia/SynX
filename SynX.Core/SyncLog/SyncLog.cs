@@ -9,7 +9,7 @@ namespace SynX.Core
         public string IdNo { get; set; }
         public string SyncType { get; set; }
         public string FileName { get; set; }
-        public DateTime FileDate { get; set; }
+        public DateTime FileDate { get; set; } = DateTime.Now;
         public bool IsSyncOut { get; set; }
         public bool IsResponseFile { get; set; }
         public string SyncStatus { get; set; }
