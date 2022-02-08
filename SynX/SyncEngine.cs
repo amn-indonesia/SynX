@@ -1,13 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SynX.Core;
-using SynX.Core.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SynX
@@ -209,7 +207,7 @@ namespace SynX
             {
                 try
                 {
-                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REREPROCESSEIVED");
+                    logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, false, "REPROCESS");
                     SyncHandler.OnFileReceived(config.Id, idNo, payload, logid);
                 }
                 catch { }
@@ -316,6 +314,11 @@ namespace SynX
             await _syncLogService.LogSyncSet(recordId, config.SyncTypeTag, idNo, tempFileName, isResponse, "SENT TO SAP");
 
             return idNo;
+        }
+
+        private async Task<bool> IsIdNoAleadyProcessed(string idNo)
+        {
+            return await _syncLogService.IsIdNoAleadyProcessed(idNo);
         }
 
         #region STATIC METHODS

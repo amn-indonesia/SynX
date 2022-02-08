@@ -132,6 +132,13 @@ namespace SynX.Core
             return false;
         }
 
+        public async Task<bool> IsIdNoAleadyProcessed(string idNo)
+        {
+            if (await _context.SyncLogs.Where(e => e.IdNo == idNo && e.IsSyncOut == false && e.SyncStatus == "RECEIVED").AnyAsync())
+                return true;
+            return false;
+        }
+
         public static AppSyncConfig LoadAppSyncConfig(string configFile = "")
         {
             var configuration = LoadConfig(configFile);
