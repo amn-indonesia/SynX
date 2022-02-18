@@ -82,6 +82,5 @@ namespace SynX.Core.Config
         /// Objek konfigurasi transport
         /// </summary>
         public TransportConfig TransportConfig { get; set; }    // Transport config information
-
     }
 }

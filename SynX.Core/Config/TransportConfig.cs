@@ -20,5 +20,7 @@ namespace SynX.Core.Config
         public string DomainName { get; set; }
         public string IPAddress { get; set; }
         public string LocalPath { get; set; }
+        public int EncryptionMode { get; set; } = -1;
+
     }
 }

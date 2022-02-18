@@ -28,7 +28,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode) transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -56,7 +58,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -91,7 +95,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -118,7 +124,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -151,7 +159,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -191,7 +201,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
@@ -226,7 +238,9 @@ namespace SynX.Transport.Ftp
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
             {
-                client.EncryptionMode = FtpEncryptionMode.Explicit;
+                if (transport.EncryptionMode >= 0)
+                    client.EncryptionMode = (FtpEncryptionMode)transport.EncryptionMode;
+
                 client.Connect();
                 try
                 {
