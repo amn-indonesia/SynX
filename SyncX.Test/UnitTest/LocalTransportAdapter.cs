@@ -54,10 +54,23 @@ namespace SynX.Test.UnitTest
             return true;
         }
 
-        public bool UploadFile(string localFileName, SyncConfig syncConfig)
+        public bool UploadFile(string localFileName, SyncConfig syncConfig, bool isBackup = false, bool isBackupError = false, string originalFileName = null)
         {
             var destinationFolder = syncConfig.TransportConfig.LocalPath;
             if (!System.IO.File.Exists(localFileName)) return false;
+            // tambahan reza
+            if(isBackup == true)
+            {
+                destinationFolder = syncConfig.TransportConfig.RemoteBackupPath;
+                if(isBackupError == true)
+                {
+                    if (isBackupError == true)
+                    {
+                        localFileName = "ERR_" + localFileName;
+                    }
+                }
+            }
+            //
             System.IO.File.Copy(localFileName, destinationFolder);
             return true;
         }

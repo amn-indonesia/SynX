@@ -76,11 +76,12 @@ namespace SynX
                 {
                     var logid = string.Empty;
                     var idNo = string.Empty;
-
+                    var tempFile = Path.GetTempFileName();
+                    string originalFileName = Path.GetFileName(file);
+                    string fileName = null;
                     try
                     {
                         // download sync file to temporaray file
-                        var tempFile = Path.GetTempFileName();
                         if (transportAdapter.DownloadFile(file, tempFile, config) == false)
                             continue;
 
@@ -94,7 +95,7 @@ namespace SynX
                             idNo = (string)payload[config.IdNoTag];
 
                         // check if this is response file by querying idno in synclog table
-                        string fileName = Path.GetFileName(file);
+                        fileName = Path.GetFileName(file);
                         if (await _syncLogService.IsResponse(idNo))
                         {
                             logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
@@ -112,6 +113,12 @@ namespace SynX
                     }
                     catch (Exception fileEx)
                     {
+                        // TAMBAHAN REZA
+                        //string fileName = Path.GetFileName(file);
+                        if (transportAdapter.UploadFile(tempFile, config, true, true, originalFileName) == false)
+                        {
+                            throw new Exception($"Failed to upload sync file {file}");
+                        }
                         await _syncLogService.LogError(idNo, fileEx.Message, logid);
                     }
                 }

@@ -222,18 +222,33 @@ namespace SynX.Transport.Ftp
             return true;
         }
 
-        public bool UploadFile(string localFileName, SyncConfig syncConfig)
+        public bool UploadFile(string localFileName, SyncConfig syncConfig, bool isBackup = false, bool isBackupError = false, string originalFileName = null)
         {
             var transport = syncConfig.TransportConfig;
             var fileName = Path.GetFileName(localFileName);
             var remotePath = transport.RemotePath;
+            // tambahan reza
+            if (isBackup ==  true)
+            {
+                remotePath = transport.RemoteBackupPath;
+            }
+            //
             if (!string.IsNullOrEmpty(syncConfig.RemotePath))
             {
                 remotePath = syncConfig.RemotePath;
             }
-
             string remoteFileName = Path.Combine(remotePath, fileName);
-
+            // TAMBAHAN REZA
+            if (isBackup == true)
+            {
+                var customFileName = originalFileName;
+                if(isBackupError == true)
+                {
+                    customFileName =  "ERR_" + originalFileName;
+                }
+                remoteFileName = Path.Combine(remotePath, customFileName);
+            }
+            //
             if (!File.Exists(localFileName)) return false;
 
             using (var client = new FtpClient(transport.Host, transport.UserName, transport.Password))
