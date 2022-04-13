@@ -108,8 +108,47 @@ namespace SynX
                         }
 
                         // move success files to backup folder
+                        // Tambahan REZA
+                        //try
+                        //{
+                        //    if (transportAdapter.MoveToBackup(file, config) == false)
+                        //    {
+                        //        if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                        //        {
+                        //            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //        }
+                        //        if (transportAdapter.RemoveFile(file, config) == false)
+                        //        {
+                        //            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //        }
+                        //        continue;
+                        //    }
+                        //}
+                        //catch
+                        //{
+                        //    if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                        //    {
+                        //        throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //    }
+                        //    if (transportAdapter.RemoveFile(file, config) == false)
+                        //    {
+                        //        throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //    }
+                        //}
                         if (transportAdapter.MoveToBackup(file, config) == false)
+                        {
+                            if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                            {
+                                throw new Exception($"Failed to upload sync file {originalFileName}");
+                            }
+                            if (transportAdapter.RemoveFile(file, config) == false)
+                            {
+                                throw new Exception($"Failed to remove sync file {originalFileName}");
+                            }
                             continue;
+                        }
+                        //if (transportAdapter.MoveToBackup(file, config) == false)
+                        //    continue;
                     }
                     catch (Exception fileEx)
                     {
@@ -117,7 +156,11 @@ namespace SynX
                         //string fileName = Path.GetFileName(file);
                         if (transportAdapter.UploadFile(tempFile, config, true, true, originalFileName) == false)
                         {
-                            throw new Exception($"Failed to upload sync file {file}");
+                            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        }
+                        if (transportAdapter.RemoveFile(file, config) == false)
+                        {
+                            throw new Exception($"Failed to remove sync file {originalFileName}");
                         }
                         await _syncLogService.LogError(idNo, fileEx.Message, logid);
                     }
