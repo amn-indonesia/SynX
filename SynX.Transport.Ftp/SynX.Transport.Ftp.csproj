@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Authors>hskartono</Authors>
     <Company>PT. AMN Indonesia</Company>
     <Description>Ftp transport library to be used with SynX</Description>
@@ -10,8 +10,8 @@
     <RepositoryUrl>https://github.com/amn-indonesia/SynX</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>sync; sap; integration; synx transport; ftp; ftp transport;</PackageTags>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

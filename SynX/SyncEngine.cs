@@ -153,16 +153,16 @@ namespace SynX
                     catch (Exception fileEx)
                     {
                         // TAMBAHAN REZA
-                        //string fileName = Path.GetFileName(file);
+                        string additionalError = "";
                         if (transportAdapter.UploadFile(tempFile, config, true, true, originalFileName) == false)
                         {
-                            throw new Exception($"Failed to upload sync file {originalFileName}");
+                            additionalError = $"Failed to upload sync file {originalFileName}";
                         }
                         if (transportAdapter.RemoveFile(file, config) == false)
                         {
-                            throw new Exception($"Failed to remove sync file {originalFileName}");
+                            additionalError = $"Failed to remove sync file {originalFileName}";
                         }
-                        await _syncLogService.LogError(idNo, fileEx.Message, logid);
+                        await _syncLogService.LogError(idNo, fileEx.Message + " - " + additionalError, logid);
                     }
                 }
                 //} catch { }
