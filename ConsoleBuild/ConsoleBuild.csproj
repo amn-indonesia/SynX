@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SynX.Core\SynX.Core.csproj" />
+    <ProjectReference Include="..\SynX.FileAdapter.SimpleXml\SynX.FileAdapter.SimpleXml.csproj" />
+    <ProjectReference Include="..\SynX.Transport.Ftp\SynX.Transport.Ftp.csproj" />
+    <ProjectReference Include="..\SynX\SynX.csproj" />
+  </ItemGroup>
+
+</Project>

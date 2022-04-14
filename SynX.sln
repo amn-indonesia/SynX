@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31911.196
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynX", "SynX\SynX.csproj", "{369CA5A2-35B4-4420-AC2A-B4E84B6FF505}"
 EndProject
@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynX.Transport.Ftp", "SynX.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynX.Core", "SynX.Core\SynX.Core.csproj", "{2FDDD963-1973-49DE-B5D6-D5115ED107BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SynX.FileAdapter.SimpleXml", "SynX.FileAdapter.SimpleXml\SynX.FileAdapter.SimpleXml.csproj", "{D8AFD0E7-2A0B-4532-AE7F-0AC58DC40E87}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SynX.FileAdapter.SimpleXml", "SynX.FileAdapter.SimpleXml\SynX.FileAdapter.SimpleXml.csproj", "{D8AFD0E7-2A0B-4532-AE7F-0AC58DC40E87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleBuild", "ConsoleBuild\ConsoleBuild.csproj", "{A766CB69-046E-41BC-A3F6-7B7DA0C8EE27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{D8AFD0E7-2A0B-4532-AE7F-0AC58DC40E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D8AFD0E7-2A0B-4532-AE7F-0AC58DC40E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D8AFD0E7-2A0B-4532-AE7F-0AC58DC40E87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A766CB69-046E-41BC-A3F6-7B7DA0C8EE27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A766CB69-046E-41BC-A3F6-7B7DA0C8EE27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A766CB69-046E-41BC-A3F6-7B7DA0C8EE27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A766CB69-046E-41BC-A3F6-7B7DA0C8EE27}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

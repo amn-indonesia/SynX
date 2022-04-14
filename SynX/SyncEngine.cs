@@ -76,11 +76,12 @@ namespace SynX
                 {
                     var logid = string.Empty;
                     var idNo = string.Empty;
-
+                    var tempFile = Path.GetTempFileName();
+                    string originalFileName = Path.GetFileName(file);
+                    string fileName = null;
                     try
                     {
                         // download sync file to temporaray file
-                        var tempFile = Path.GetTempFileName();
                         if (transportAdapter.DownloadFile(file, tempFile, config) == false)
                             continue;
 
@@ -94,7 +95,7 @@ namespace SynX
                             idNo = (string)payload[config.IdNoTag];
 
                         // check if this is response file by querying idno in synclog table
-                        string fileName = Path.GetFileName(file);
+                        fileName = Path.GetFileName(file);
                         if (await _syncLogService.IsResponse(idNo))
                         {
                             logid = await _syncLogService.LogSyncGet(idNo, config.SyncTypeTag, fileName, true, "RECEIVED");
@@ -107,11 +108,60 @@ namespace SynX
                         }
 
                         // move success files to backup folder
+                        // Tambahan REZA
+                        //try
+                        //{
+                        //    if (transportAdapter.MoveToBackup(file, config) == false)
+                        //    {
+                        //        if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                        //        {
+                        //            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //        }
+                        //        if (transportAdapter.RemoveFile(file, config) == false)
+                        //        {
+                        //            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //        }
+                        //        continue;
+                        //    }
+                        //}
+                        //catch
+                        //{
+                        //    if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                        //    {
+                        //        throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //    }
+                        //    if (transportAdapter.RemoveFile(file, config) == false)
+                        //    {
+                        //        throw new Exception($"Failed to upload sync file {originalFileName}");
+                        //    }
+                        //}
                         if (transportAdapter.MoveToBackup(file, config) == false)
+                        {
+                            if (transportAdapter.UploadFile(tempFile, config, true, false, originalFileName) == false)
+                            {
+                                throw new Exception($"Failed to upload sync file {originalFileName}");
+                            }
+                            if (transportAdapter.RemoveFile(file, config) == false)
+                            {
+                                throw new Exception($"Failed to remove sync file {originalFileName}");
+                            }
                             continue;
+                        }
+                        //if (transportAdapter.MoveToBackup(file, config) == false)
+                        //    continue;
                     }
                     catch (Exception fileEx)
                     {
+                        // TAMBAHAN REZA
+                        //string fileName = Path.GetFileName(file);
+                        if (transportAdapter.UploadFile(tempFile, config, true, true, originalFileName) == false)
+                        {
+                            throw new Exception($"Failed to upload sync file {originalFileName}");
+                        }
+                        if (transportAdapter.RemoveFile(file, config) == false)
+                        {
+                            throw new Exception($"Failed to remove sync file {originalFileName}");
+                        }
                         await _syncLogService.LogError(idNo, fileEx.Message, logid);
                     }
                 }
